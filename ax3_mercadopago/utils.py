@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.utils.module_loading import import_string
 
 from .api import AX3Client
-from .cache_keys import CACHE_KEY_BANK_LIST
+from .cache_keys import CACHE_KEY_BANK_LIST, CACHE_KEY_IDENTIFICATION_TYPE_LIST
 from . import data
 
 
@@ -19,6 +19,14 @@ def refresh_bank_list_cache():
         bank_list = [(x['id'], x['description']) for x in item.get('financial_institutions', [])]
         if bank_list:
             cache.set(CACHE_KEY_BANK_LIST, bank_list, timeout=None)
+
+
+def refresh_document_types_cache():
+    mercado_pago = AX3Client()
+    response = mercado_pago.identification_types.list()
+
+    bank_list = [(x['id'], x['name']) for x in response.data]
+    cache.set(CACHE_KEY_IDENTIFICATION_TYPE_LIST, bank_list, timeout=None)
 
 
 def create_mercadopago_user(user_dict: dict, retries: int = 3) -> str:
