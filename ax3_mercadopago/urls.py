@@ -6,7 +6,7 @@ from . import views
 app_name = 'mercadopago'
 urlpatterns = [
     path(
-        'puntos-de-venta/',
+        'notification/',
         views.MercadopagoNotificationView.as_view(),
         name='notification',
     ),
