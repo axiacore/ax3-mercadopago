@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse
 
 from .utils import update_payment
+from .exceptions import NotFoundError, BadRequestError
 
 
 class MercadopagoNotificationView(View):
@@ -27,6 +28,10 @@ class MercadopagoNotificationView(View):
             notification_type and notification_type == 'payment' and
             notification_action and notification_action == 'payment.updated'
         ):
-            update_payment(payment_data['data']['id'])
+            try:
+                update_payment(payment_data['data']['id'])
+                return HttpResponse('Thank you :)')
+            except (NotFoundError, BadRequestError) as exc:
+                return HttpResponseBadRequest(exc)
 
-        return HttpResponse('Thank you :)')
+        return HttpResponseBadRequest()

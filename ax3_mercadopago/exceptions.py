@@ -9,16 +9,14 @@ class MercadopagoError(Exception):
             return
 
         cause = cause_or_message
-        if cause.response:
-            try:
-                self.http_status = cause.response.status_code
-                self.json_body = cause.response.json()
-                self.text_body = cause.response.text
-                self.code = self.json_body['error']
-                message = self.json_body['message']
-            except (KeyError, ValueError):
-                message = str(cause)
-        else:
+
+        try:
+            self.http_status = cause.response.status_code
+            self.json_body = cause.response.json()
+            self.text_body = cause.response.text
+            self.code = self.json_body['error']
+            message = self.json_body['message']
+        except (KeyError, ValueError):
             message = str(cause)
 
         super().__init__(message)

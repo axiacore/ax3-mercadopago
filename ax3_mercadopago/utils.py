@@ -1,11 +1,10 @@
 from django.apps import apps
-from django.conf import settings
 from django.core.cache import cache
 from django.utils.module_loading import import_string
 
 from .api import AX3Client
 from .cache_keys import CACHE_KEY_BANK_LIST, CACHE_KEY_IDENTIFICATION_TYPE_LIST
-from . import data
+from . import data, settings
 
 
 def refresh_bank_list_cache():
@@ -57,25 +56,19 @@ def update_payment(mercadopago_payment_id: int):
         'charged_back': data.CHARGED_BACK_CHOICE,
     }
 
-    if response.status_code == 200 and 'status' in response.data:
-        payment = apps.get_model(settings.PAYMENT_MODEL).objects.filter(
-            id=response.data['external_reference'].strip(settings.REFERENCE_PREFIX)
-        ).first()
+    payment = apps.get_model(settings.PAYMENT_MODEL).objects.filter(
+        id=response.data['external_reference'].strip(settings.REFERENCE_PREFIX)
+    ).first()
 
+    if payment and response.status_code == 200 and 'status' in response.data:
         payment.payment_response = response.data
         payment.status = status_map[response.data['status']]
         payment.save(update_fields=['payment_response', 'status'])
 
         if payment.status == data.PAID_CHOICE:
-            usecase = import_string(settings.PAID_USECASE)(
-                payment=payment,
-                payment_response=response.data
-            )
+            usecase = import_string(settings.PAID_USECASE)(payment=payment)
             usecase.execute()
 
         elif payment.status in [data.CANCELLED_CHOICE, data.REJECTED_CHOICE]:
-            usecase = import_string(settings.REJECTED_USECASE)(
-                payment=payment,
-                payment_response=response.data
-            )
+            usecase = import_string(settings.REJECTED_USECASE)(payment=payment)
             usecase.execute()

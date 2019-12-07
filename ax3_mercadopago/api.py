@@ -1,5 +1,5 @@
+from requests import HTTPError
 from mercadopago.api import Client
-from mercadopago.errors import BadRequestError, AuthenticationError, NotFoundError
 
 from . import settings, exceptions
 
@@ -14,14 +14,15 @@ class AX3Client(Client):
         )
 
     def _handle_request_error(self, error):
-        if isinstance(error, AuthenticationError):
-            raise exceptions.AuthenticationError(error)
+        if isinstance(error, HTTPError):
+            status = error.response.status_code
 
-        if isinstance(error, BadRequestError):
-            raise exceptions.BadRequestError(error)
-
-        if isinstance(error, NotFoundError):
-            raise exceptions.NotFoundError(error)
+            if status == 400:
+                raise exceptions.BadRequestError(error)
+            if status == 401:
+                raise exceptions.AuthenticationError(error)
+            if status == 404:
+                raise exceptions.NotFoundError(error)
 
         raise exceptions.MercadopagoError(error)
 
