@@ -12,3 +12,15 @@ PAYMENT_STATUS_CHOICES = (
     (REFUNDED_CHOICE, 'Reversado'),
     (CHARGED_BACK_CHOICE, 'Reversado'),
 )
+
+MERCADOPAGO_STATUS_MAP = {
+    'rejected': REJECTED_CHOICE,
+    'pending': PENDING_CHOICE,
+    'approved': PAID_CHOICE,
+    'authorized': PENDING_CHOICE,
+    'in_process': PENDING_CHOICE,
+    'in_mediation': PENDING_CHOICE,
+    'cancelled': CANCELLED_CHOICE,
+    'refunded': REFUNDED_CHOICE,
+    'charged_back': CHARGED_BACK_CHOICE,
+}

@@ -44,31 +44,22 @@ def update_payment(mercadopago_payment_id: int):
     mercado_pago = AX3Client()
     response = mercado_pago.payments.get(mercadopago_payment_id)
 
-    status_map = {
-        'rejected': data.REJECTED_CHOICE,
-        'pending': data.PENDING_CHOICE,
-        'approved': data.PAID_CHOICE,
-        'authorized': data.PENDING_CHOICE,
-        'in_process': data.PENDING_CHOICE,
-        'in_mediation': data.PENDING_CHOICE,
-        'cancelled': data.CANCELLED_CHOICE,
-        'refunded': data.REFUNDED_CHOICE,
-        'charged_back': data.CHARGED_BACK_CHOICE,
-    }
-
     payment = apps.get_model(settings.PAYMENT_MODEL).objects.filter(
         id=response.data['external_reference'].strip(settings.REFERENCE_PREFIX)
     ).first()
 
     if payment and response.status_code == 200 and 'status' in response.data:
         payment.payment_response = response.data
-        payment.status = status_map[response.data['status']]
-        payment.save(update_fields=['payment_response', 'status'])
+        payment.payment_status = data.MERCADOPAGO_STATUS_MAP[response.data['status']]
+        payment.save(update_fields=['payment_response', 'payment_status'])
 
-        if payment.status == data.PAID_CHOICE:
-            usecase = import_string(settings.PAID_USECASE)(payment=payment)
-            usecase.execute()
+        try:
+            if payment.status == data.PAID_CHOICE:
+                usecase = import_string(settings.PAID_USECASE)(payment=payment)
+                usecase.execute()
 
-        elif payment.status in [data.CANCELLED_CHOICE, data.REJECTED_CHOICE]:
-            usecase = import_string(settings.REJECTED_USECASE)(payment=payment)
-            usecase.execute()
+            elif payment.status in [data.CANCELLED_CHOICE, data.REJECTED_CHOICE]:
+                usecase = import_string(settings.REJECTED_USECASE)(payment=payment)
+                usecase.execute()
+        except ImportError:
+            pass
