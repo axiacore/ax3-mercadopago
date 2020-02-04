@@ -1,12 +1,12 @@
 PENDING_CHOICE = 10
-PAID_CHOICE = 20
+APPROVED_CHOICE = 20
 REJECTED_CHOICE = 30
 CANCELLED_CHOICE = 40
 REFUNDED_CHOICE = 50
 CHARGED_BACK_CHOICE = 60
 PAYMENT_STATUS_CHOICES = (
     (PENDING_CHOICE, 'Pendiente'),
-    (PAID_CHOICE, 'Pagado'),
+    (APPROVED_CHOICE, 'Pagado'),
     (REJECTED_CHOICE, 'Rechazado'),
     (CANCELLED_CHOICE, 'Cancelado'),
     (REFUNDED_CHOICE, 'Reversado'),
@@ -16,7 +16,7 @@ PAYMENT_STATUS_CHOICES = (
 MERCADOPAGO_STATUS_MAP = {
     'rejected': REJECTED_CHOICE,
     'pending': PENDING_CHOICE,
-    'approved': PAID_CHOICE,
+    'approved': APPROVED_CHOICE,
     'authorized': PENDING_CHOICE,
     'in_process': PENDING_CHOICE,
     'in_mediation': PENDING_CHOICE,

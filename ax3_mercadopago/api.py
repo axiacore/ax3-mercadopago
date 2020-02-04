@@ -5,6 +5,20 @@ from mercadopago.client import BaseClient
 from . import exceptions, settings
 
 
+class CardTokenAPI(api.CardTokenAPI):
+    _base_path = '/v1/card_tokens'
+    params = {'public_key': settings.PUBLIC_KEY}
+
+    def create(self, **data):
+        return self._client.post('/', params=self.params, json=data)
+
+    def get(self, token_id):
+        return self._client.get('/{id}', {'id': token_id}, params=self.params)
+
+    def update(self, token_id, public_key, **data):
+        return self._client.put('/{id}', {'id': token_id}, params=self.params, json=data)
+
+
 class AX3Client(BaseClient):
     base_url = 'https://api.mercadopago.com'
 
@@ -46,7 +60,7 @@ class AX3Client(BaseClient):
 
     @property
     def card_tokens(self):
-        return api.CardTokenAPI(self)
+        return CardTokenAPI(self)
 
     @property
     def customers(self):
