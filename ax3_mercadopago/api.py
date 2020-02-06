@@ -1,8 +1,11 @@
+from urllib.parse import urlencode
+
 import requests
 from mercadopago import api
 from mercadopago.client import BaseClient
 
 from . import exceptions, settings
+from .models import MercadopagoAccessToken
 
 
 class CardTokenAPI(api.CardTokenAPI):
@@ -17,6 +20,38 @@ class CardTokenAPI(api.CardTokenAPI):
 
     def update(self, token_id, public_key, **data):
         return self._client.put('/{id}', {'id': token_id}, params=self.params, json=data)
+
+
+class MarketplaceOAuthTokenAPI(api.API):
+    _base_path = '/oauth/token'
+    _redirect_uri = settings.MARKETPLACE_REDIRECT_URI
+
+    def create(self, code):
+        params = {
+            'client_secret': settings.ACCESS_TOKEN,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': self._redirect_uri,
+        }
+        return self._client.post('/', params=params)
+
+    def refresh(self, refresh_token):
+        params = {
+            'client_secret': settings.ACCESS_TOKEN,
+            'grant_type': 'refresh_token',
+            'refresh_token': refresh_token,
+        }
+        return self._client.post('/', params=params)
+
+    def get_auth_uri(self):
+        return 'https://auth.mercadopago.com.ar/authorization?{}'.format(
+            urlencode({
+                'client_id': settings.MARKETPLACE_APP_ID,
+                'redirect_uri': self._redirect_uri,
+                'response_type': 'code',
+                'platform_id': 'mp',
+            })
+        )
 
 
 class AX3Client(BaseClient):
@@ -48,7 +83,19 @@ class AX3Client(BaseClient):
 
         if 'params' not in kwargs:
             kwargs['params'] = {}
+
         kwargs['params']['access_token'] = self.access_token
+
+        if settings.MARKETPLACE_SELLER and path == api.PaymentAPI._base_path:
+            seller_token = MercadopagoAccessToken.objects.first()
+            if not seller_token:
+                raise exceptions.AuthenticationError(
+                    'Ensure create the first token using create_seller_token function, maybe you '
+                    'need generate code to create token, use marketplace_tokens.get_auth_uri '
+                    'to get auth url and paste it on the browser'
+                )
+
+            kwargs['params']['access_token'] = seller_token.access_token
 
         url = self.base_url + path.format(**path_args)
 
@@ -57,6 +104,10 @@ class AX3Client(BaseClient):
     @property
     def access_token(self):
         return self._access_token
+
+    @property
+    def marketplace_tokens(self):
+        return MarketplaceOAuthTokenAPI(self)
 
     @property
     def card_tokens(self):

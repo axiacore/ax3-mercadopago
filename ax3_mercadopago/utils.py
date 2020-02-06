@@ -1,10 +1,13 @@
 from django.apps import apps
 from django.core.cache import cache
+from django.utils import timezone
 from django.utils.module_loading import import_string
 
+from . import data, settings
 from .api import AX3Client
 from .cache_keys import CACHE_KEY_BANK_LIST, CACHE_KEY_IDENTIFICATION_TYPE_LIST
-from . import data, settings
+from .exceptions import MercadopagoError
+from .models import MercadopagoAccessToken
 
 
 def refresh_bank_list_cache():
@@ -63,3 +66,35 @@ def update_payment(mercadopago_payment_id: int):
                 usecase.execute()
         except ImportError:
             pass
+
+
+def create_seller_token(code):
+    mercado_pago = AX3Client()
+    response = mercado_pago.marketplace_tokens.create(code=code)
+    MercadopagoAccessToken.objects.create(
+        user_id=response.data['user_id'],
+        access_token=response.data['access_token'],
+        public_key=response.data['public_key'],
+        refresh_token=response.data['refresh_token'],
+        token_type=response.data['token_type'],
+        expires_in=timezone.localtime() + timezone.timedelta(seconds=response.data['expires_in']),
+        response_json=response.data,
+    )
+
+
+def refresh_seller_token():
+    token = MercadopagoAccessToken.objects.first()
+    if not token:
+        raise MercadopagoError('Ensure create the first token using create_seller_token function')
+
+    mercado_pago = AX3Client()
+    response = mercado_pago.marketplace_tokens.refresh(refresh_token=token.refresh_token)
+    MercadopagoAccessToken.objects.create(
+        user_id=response.data['user_id'],
+        access_token=response.data['access_token'],
+        public_key=response.data['public_key'],
+        refresh_token=response.data['refresh_token'],
+        token_type=response.data['token_type'],
+        expires_in=timezone.localtime() + timezone.timedelta(seconds=response.data['expires_in']),
+        response_json=response.data,
+    )
