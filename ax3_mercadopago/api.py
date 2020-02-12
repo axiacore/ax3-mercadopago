@@ -86,7 +86,7 @@ class AX3Client(BaseClient):
 
         kwargs['params']['access_token'] = self.access_token
 
-        if settings.MARKETPLACE_SELLER and path == api.PaymentAPI._base_path:
+        if settings.MARKETPLACE_SELLER and api.PaymentAPI._base_path in path:
             seller_token = MercadopagoAccessToken.objects.first()
             if not seller_token:
                 raise exceptions.AuthenticationError(
