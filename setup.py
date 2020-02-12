@@ -1,7 +1,7 @@
 import os
 from setuptools import find_packages, setup
 
-__VERSION__ = '0.2.0'
+__VERSION__ = '0.2.1'
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
