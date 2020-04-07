@@ -1,7 +1,7 @@
 import os
 from setuptools import find_packages, setup
 
-__VERSION__ = '0.2.2'
+__VERSION__ = '0.2.3'
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -33,6 +33,7 @@ setup(
     ],
     install_requires=[
         'pymercadopago >= 0.3.0',
+        'python-dateutil >= 2.8.1',
         'django >= 2.2.0',
     ],
 )
