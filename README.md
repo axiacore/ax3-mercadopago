@@ -24,9 +24,20 @@ Add ``ax3_mercadopago`` to your ``INSTALLED_APPS``::
         'ax3_mercadopago',
     ]
 
+
 ## Configuration
 
 Add Mercadopago client and secret:
 
     MERCADOPAGO_CLIENT_ID
     MERCADOPAGO_CLIENT_SECRET
+
+
+## Releasing a new version
+
+Make sure you increase the version number and create a git tag:
+
+```
+$ python3 -m pip install --user --upgrade setuptools wheel twine
+$ ./release.sh
+```
