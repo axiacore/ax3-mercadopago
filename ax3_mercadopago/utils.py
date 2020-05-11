@@ -57,11 +57,11 @@ def update_payment(mercadopago_payment_id: int):
         payment.save(update_fields=['payment_response', 'payment_status'])
 
         try:
-            if payment.status == data.APPROVED_CHOICE:
+            if payment.payment_status == data.APPROVED_CHOICE:
                 usecase = import_string(settings.PAID_USECASE)(payment=payment)
                 usecase.execute()
 
-            elif payment.status in [data.CANCELLED_CHOICE, data.REJECTED_CHOICE]:
+            elif payment.payment_status in [data.CANCELLED_CHOICE, data.REJECTED_CHOICE]:
                 usecase = import_string(settings.REJECTED_USECASE)(payment=payment)
                 usecase.execute()
         except ImportError:
