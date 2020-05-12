@@ -48,7 +48,7 @@ def update_payment(mercadopago_payment_id: int):
     response = mercado_pago.payments.get(mercadopago_payment_id)
 
     payment = apps.get_model(settings.PAYMENT_MODEL).objects.filter(
-        id=response.data['external_reference'].strip(settings.REFERENCE_PREFIX)
+        id=response.data['external_reference'].replace(settings.REFERENCE_PREFIX, '')
     ).first()
 
     if payment and response.status_code == 200 and 'status' in response.data:
