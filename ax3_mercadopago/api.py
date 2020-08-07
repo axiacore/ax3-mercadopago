@@ -59,7 +59,8 @@ class AX3Client(BaseClient):
 
     def __init__(self, access_token=None):
         self._session = requests.Session()
-        self._session.headers['x-platform-id'] = settings.PLATFORM_ID
+        if settings.PLATFORM_ID:
+            self._session.headers['x-platform-id'] = settings.PLATFORM_ID
 
         if not access_token:
             access_token = settings.ACCESS_TOKEN
