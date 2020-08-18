@@ -32,7 +32,7 @@ class MercadopagoAccessToken(models.Model):
 
     expires_in = models.DateTimeField()
 
-    response_json = JSONField(default=dict)
+    response_json = models.JSONField(default=dict)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
