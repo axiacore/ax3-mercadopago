@@ -1,4 +1,3 @@
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from .data import PAYMENT_STATUS_CHOICES, PENDING_CHOICE, APPROVED_CHOICE
@@ -11,7 +10,7 @@ class PaymentModelMixin(models.Model):
         default=PENDING_CHOICE,
     )
 
-    payment_response = JSONField(default=dict)
+    payment_response = models.JSONField(default=dict)
 
     def is_paid(self):
         return self.payment_status == APPROVED_CHOICE
