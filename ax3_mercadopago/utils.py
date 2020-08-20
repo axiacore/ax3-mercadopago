@@ -52,24 +52,28 @@ def update_payment(mercadopago_payment_id: int):
     ).first()
 
     if payment and response.status_code == 200 and 'status' in response.data:
+        old_status = payment.payment_status
+        new_status = data.MERCADOPAGO_STATUS_MAP[response.data['status']]
+
         payment.payment_response = response.data
-        payment.payment_status = data.MERCADOPAGO_STATUS_MAP[response.data['status']]
+        payment.payment_status = new_status
         payment.save(update_fields=['payment_response', 'payment_status'])
 
-        try:
-            if payment.payment_status == data.APPROVED_CHOICE:
-                usecase = import_string(settings.PAID_USECASE)(payment=payment)
-                usecase.execute()
+        if old_status != new_status:
+            try:
+                if payment.payment_status == data.APPROVED_CHOICE:
+                    usecase = import_string(settings.PAID_USECASE)(payment=payment)
+                    usecase.execute()
 
-            elif payment.payment_status in [
-                data.CANCELLED_CHOICE,
-                data.REJECTED_CHOICE,
-                data.REFUNDED_CHOICE
-            ]:
-                usecase = import_string(settings.REJECTED_USECASE)(payment=payment)
-                usecase.execute()
-        except ImportError:
-            pass
+                elif payment.payment_status in [
+                    data.CANCELLED_CHOICE,
+                    data.REJECTED_CHOICE,
+                    data.REFUNDED_CHOICE
+                ]:
+                    usecase = import_string(settings.REJECTED_USECASE)(payment=payment)
+                    usecase.execute()
+            except ImportError:
+                pass
 
 
 def create_seller_token(code):
