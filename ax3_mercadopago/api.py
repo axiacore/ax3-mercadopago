@@ -44,7 +44,7 @@ class MarketplaceOAuthTokenAPI(api.API):
         return self._client.post('/', params=params)
 
     def get_auth_uri(self):
-        return 'https://auth.mercadopago.com.ar/authorization?{}'.format(
+        return 'https://auth.mercadopago.com.co/authorization?{}'.format(
             urlencode({
                 'client_id': settings.MARKETPLACE_APP_ID,
                 'redirect_uri': self._redirect_uri,
@@ -86,7 +86,8 @@ class AX3Client(BaseClient):
         if 'params' not in kwargs:
             kwargs['params'] = {}
 
-        kwargs['params']['access_token'] = self.access_token
+        if MarketplaceOAuthTokenAPI._base_path not in path:
+            kwargs['params']['access_token'] = self.access_token
 
         if settings.MARKETPLACE_SELLER and api.PaymentAPI._base_path in path:
             seller_token = MercadopagoAccessToken.objects.first()
