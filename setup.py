@@ -34,6 +34,6 @@ setup(
     install_requires=[
         'pymercadopago >= 0.3.0',
         'python-dateutil >= 2.8.1',
-        'django >= 2.2.0',
+        'django >= 3.1.0',
     ],
 )
