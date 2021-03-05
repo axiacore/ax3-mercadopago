@@ -16,7 +16,7 @@ class MercadopagoError(Exception):
             self.text_body = cause.response.text
             self.code = self.json_body['error']
             message = self.json_body['message']
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, AttributeError):
             message = str(cause)
 
         super().__init__(message)
